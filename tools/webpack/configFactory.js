@@ -12,6 +12,13 @@ const { removeEmpty, ifElse, merge } = require('../utils');
 
 const appRootPath = appRoot.toString();
 
+const vendor = [
+  'react',
+  'react-router',
+  'react-dom',
+  'react-helmet'
+];
+
 // @see https://github.com/motdotla/dotenv
 dotenv.config(process.env.NOW
   // This is to support deployment to the "now" host.  See the README for more info.
@@ -116,6 +123,7 @@ function webpackConfigFactory({ target, mode }, { json }) {
           ifDevClient(`webpack-hot-middleware/client?reload=true&path=http://localhost:${process.env.CLIENT_DEVSERVER_PORT}/__webpack_hmr`),
           path.resolve(appRootPath, `./src/${target}/index.js`),
         ]),
+        vendor
       }
     ),
     output: {
@@ -166,6 +174,11 @@ function webpackConfigFactory({ target, mode }, { json }) {
       // our long term browser caching strategy for our client bundle, avoiding
       // cases where browsers end up having to download all the client chunks
       // even though 1 or 2 may have only changed.
+
+      new webpack.optimize.CommonsChunkPlugin({
+        names: ['vendor'],
+        minChunks: Infinity
+      }),
       ifClient(new WebpackMd5Hash()),
 
       // Each key passed into DefinePlugin is an identifier.
