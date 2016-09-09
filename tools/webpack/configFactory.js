@@ -122,9 +122,16 @@ function webpackConfigFactory({ target, mode }, { json }) {
           ifDevClient('react-hot-loader/patch'),
           ifDevClient(`webpack-hot-middleware/client?reload=true&path=http://localhost:${process.env.CLIENT_DEVSERVER_PORT}/__webpack_hmr`),
           path.resolve(appRootPath, `./src/${target}/index.js`),
-        ]),
-        vendor
-      }
+        ])
+      },
+      ifProdClient({
+        vendor: [
+          'react',
+          'react-router',
+          'react-dom',
+          'react-helmet'
+        ]
+      })
     ),
     output: {
       // The dir in which our bundle should be output.
@@ -175,10 +182,12 @@ function webpackConfigFactory({ target, mode }, { json }) {
       // cases where browsers end up having to download all the client chunks
       // even though 1 or 2 may have only changed.
 
-      new webpack.optimize.CommonsChunkPlugin({
-        names: ['vendor'],
-        minChunks: Infinity
-      }),
+      ifProdClient(
+        new webpack.optimize.CommonsChunkPlugin({
+          names: ['vendor'],
+          minChunks: Infinity
+        })
+      ),
       ifClient(new WebpackMd5Hash()),
 
       // Each key passed into DefinePlugin is an identifier.
